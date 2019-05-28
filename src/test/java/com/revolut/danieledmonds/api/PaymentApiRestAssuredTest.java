@@ -5,7 +5,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Test;
 
-public class ApplicationTest {
+public class PaymentApiRestAssuredTest {
 
 
     private static final String API_ROOT = "http://localhost:9999";

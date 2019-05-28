@@ -13,11 +13,14 @@ public class PaymentService {
 
     private PaymentValidationService paymentValidator;
 
+    private Database database;
+
     private final static Logger LOG = LoggerFactory.getLogger(PaymentApi.class.getCanonicalName());
 
     @Inject
-    public PaymentService(PaymentValidationService paymentValidator) {
+    public PaymentService(PaymentValidationService paymentValidator, Database database) {
         this.paymentValidator = paymentValidator;
+        this.database = database;
     }
 
     public Response processPayment(Payment payment) {
@@ -26,7 +29,7 @@ public class PaymentService {
 
             paymentValidator.validatePayment(payment);
 
-            long transactionId =  Database.insertTransactionsAndAccount(
+            long transactionId =  database.insertTransactionsAndAccount(
                     payment.getDebitingAccountNumber(),
                     payment.getCreditingAccountNumber(),
                     payment.getAmount());

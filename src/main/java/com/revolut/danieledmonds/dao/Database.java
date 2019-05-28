@@ -4,8 +4,12 @@ import com.revolut.danieledmonds.domain.Account;
 import com.revolut.danieledmonds.domain.TransactionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class Database {
 
@@ -14,7 +18,7 @@ public class Database {
     private static Connection conn;
     private static boolean initialised = false;
 
-    public static void initialiseDatabase() throws SQLException {
+    public void initialiseDatabase() throws SQLException {
         if(!initialised){
             try {
                 LOG.info("About to create database connection");
@@ -35,7 +39,7 @@ public class Database {
 
     }
 
-    private static void createAccountsTable() throws SQLException {
+    private void createAccountsTable() throws SQLException {
         LOG.info("Creating ACCOUNTS table");
         PreparedStatement statement = conn.prepareStatement(
                 "CREATE TABLE ACCOUNTS " +
@@ -46,7 +50,7 @@ public class Database {
         statement.executeUpdate();
     }
 
-    private static void createTransactionsTable() throws SQLException {
+    private void createTransactionsTable() throws SQLException {
         LOG.info("Creating TRANSACTIONS table");
         PreparedStatement statement = conn.prepareStatement(
                 "CREATE TABLE TRANSACTIONS"+
@@ -70,7 +74,7 @@ public class Database {
      * @param balance
      * @throws SQLException
      */
-    public static void insertIntoAccounts(int accountNumber, double balance) throws SQLException {
+    public void insertIntoAccounts(int accountNumber, double balance) throws SQLException {
 
         LOG.info(String.format("Inserting account accountNumber: %s, balance: %s", accountNumber, balance));
         try {
@@ -90,7 +94,7 @@ public class Database {
      * @param accountNumber
      * @return Account object
      */
-    public static Account getAccount(String accountNumber) {
+    public Account getAccount(String accountNumber) {
         LOG.info(String.format("About to retrieve account with accountNumber:  %s", accountNumber));
         try {
             Account account = new Account();
@@ -118,7 +122,7 @@ public class Database {
      * @param amount
      * @return long transactionId
      */
-    public static long insertTransactionsAndAccount(String debitingAccount, String creditingAccount, int amount) {
+    public long insertTransactionsAndAccount(String debitingAccount, String creditingAccount, int amount) {
         long transactionId = -1;
         try {
             conn.setAutoCommit(false); //transaction block start

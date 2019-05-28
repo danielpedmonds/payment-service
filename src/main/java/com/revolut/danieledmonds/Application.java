@@ -18,16 +18,19 @@ public class Application {
 
     private final PaymentApi paymentApi;
 
+    private final Database database;
+
     @Inject
-    Application(final PaymentApi paymentApi) {
+    Application(final PaymentApi paymentApi, final Database database) {
         this.paymentApi = paymentApi;
+        this.database = database;
     }
 
     void run(final int port) {
         port(port);
 
         try {
-            Database.initialiseDatabase();
+            database.initialiseDatabase();
         } catch (SQLException e) {
             e.printStackTrace();
         }

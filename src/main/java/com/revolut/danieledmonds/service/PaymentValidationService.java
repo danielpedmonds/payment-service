@@ -6,9 +6,19 @@ import com.revolut.danieledmonds.domain.Payment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+
 public class PaymentValidationService {
 
     private final static Logger LOG = LoggerFactory.getLogger(PaymentValidationService.class.getCanonicalName());
+
+    private Database database;
+
+    @Inject
+    public PaymentValidationService(Database database) {
+        this.database = database;
+    }
+
 
     public void validatePayment(Payment payment) {
 
@@ -30,13 +40,13 @@ public class PaymentValidationService {
             throw new IllegalArgumentException("Field 'creditingAccountNumber' field should be populated");
         }
 
-        Account creditingAccount = Database.getAccount(payment.getCreditingAccountNumber());
+        Account creditingAccount = database.getAccount(payment.getCreditingAccountNumber());
 
         if (creditingAccount == null) {
             throw new IllegalArgumentException(String.format("Unable to find 'creditingAccountNumber': %s", payment.getCreditingAccountNumber()));
         }
 
-        Account debitingAccount = Database.getAccount(payment.getDebitingAccountNumber());
+        Account debitingAccount = database.getAccount(payment.getDebitingAccountNumber());
 
         if (debitingAccount == null) {
             throw new IllegalArgumentException(String.format("Unable to find 'debitingAccountNumber': %s", payment.getCreditingAccountNumber()));
