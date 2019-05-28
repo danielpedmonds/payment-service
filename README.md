@@ -1,4 +1,4 @@
-# payments-service
+# payments-com.revolut.danieledmonds.service
 
 ###### Build & Run
 ```

@@ -1,24 +1,24 @@
-package com.revolut.danieledmonds.validation;
+package com.revolut.danieledmonds.service;
 
-import com.revolut.danieledmonds.dao.AccountDao;
+import com.revolut.danieledmonds.dao.Database;
 import com.revolut.danieledmonds.domain.Account;
 import com.revolut.danieledmonds.domain.Payment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-public class PaymentValidator {
+public class PaymentValidationService {
 
-    private final AccountDao accountDao;
-
-    @Inject
-    PaymentValidator(final AccountDao accountDao) {
-        this.accountDao = accountDao;
-    }
+    private final static Logger LOG = LoggerFactory.getLogger(PaymentValidationService.class.getCanonicalName());
 
     public void validatePayment(Payment payment) {
+
+        LOG.info("Validating payload");
+
+        if(payment == null) {
+            throw new IllegalArgumentException("Request must contain payment payload in body");
+        }
 
         if(!Integer.toString(payment.getAmount()).matches("[0-9]{1,10}")) {
             throw new IllegalArgumentException("Field 'amount' should be a positive integer of maximum 10 digits");
@@ -32,13 +32,13 @@ public class PaymentValidator {
             throw new IllegalArgumentException("Field 'creditingAccountNumber' field should be populated");
         }
 
-        Account creditingAccount = accountDao.getAccount(payment.getCreditingAccountNumber());
+        Account creditingAccount = Database.getAccount(payment.getCreditingAccountNumber());
 
         if (creditingAccount == null) {
             throw new IllegalArgumentException(String.format("Unable to find 'creditingAccountNumber': %s", payment.getCreditingAccountNumber()));
         }
 
-        Account debitingAccount = accountDao.getAccount(payment.getDebitingAccountNumber());
+        Account debitingAccount = Database.getAccount(payment.getDebitingAccountNumber());
 
         if (debitingAccount == null) {
             throw new IllegalArgumentException(String.format("Unable to find 'debitingAccountNumber': %s", payment.getCreditingAccountNumber()));
