@@ -3,7 +3,13 @@ package com.revolut.danieledmonds.api;
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+
+import com.jayway.restassured.RestAssured;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
 
 public class PaymentApiRestAssuredTest {
 
@@ -11,6 +17,12 @@ public class PaymentApiRestAssuredTest {
     private static final String API_ROOT = "http://localhost:9999";
 
     private static final String API_PAYMENT = "/payment";
+
+    @BeforeClass
+    public static void setup() throws IOException {
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("java -jar build/libs/payments-service-1.0.jar");
+    }
 
     @Test
     public void makeSureThatPaymentFailsWithNoBody() {

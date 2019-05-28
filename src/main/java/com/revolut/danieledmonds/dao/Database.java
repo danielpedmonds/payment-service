@@ -122,40 +122,35 @@ public class Database {
      * @param amount
      * @return long transactionId
      */
-    public long insertTransactionsAndAccount(String debitingAccount, String creditingAccount, int amount) {
-        long transactionId = -1;
-        try {
-            conn.setAutoCommit(false); //transaction block start
+    public long insertTransactionsAndAccount(String debitingAccount, String creditingAccount, int amount) throws SQLException {
+        long transactionId;
+        conn.setAutoCommit(false); //transaction block start
 
-            PreparedStatement insertTransactionStatement = conn.prepareStatement("INSERT INTO TRANSACTIONS (STATUS, DEBITING_ACCOUNT_ID, CREDITING_ACCOUNT_ID, AMOUNT) VALUES ( ?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
-            insertTransactionStatement.setString(1, TransactionStatus.COMPLETE.name());
-            insertTransactionStatement.setString(2, debitingAccount);
-            insertTransactionStatement.setString(3, creditingAccount);
-            insertTransactionStatement.setInt(4, amount);
-            insertTransactionStatement.executeUpdate();
+        PreparedStatement insertTransactionStatement = conn.prepareStatement("INSERT INTO TRANSACTIONS (STATUS, DEBITING_ACCOUNT_ID, CREDITING_ACCOUNT_ID, AMOUNT) VALUES ( ?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+        insertTransactionStatement.setString(1, TransactionStatus.COMPLETE.name());
+        insertTransactionStatement.setString(2, debitingAccount);
+        insertTransactionStatement.setString(3, creditingAccount);
+        insertTransactionStatement.setInt(4, amount);
+        insertTransactionStatement.executeUpdate();
 
-            ResultSet resultSet = insertTransactionStatement.getGeneratedKeys();
-            if (resultSet.next()) {
-                transactionId = resultSet.getLong(1);
-            } else {
-                throw new SQLException("No transaction ID generate for transaction");
-            }
-
-            PreparedStatement updateCreditingAccountStatement = conn.prepareStatement("UPDATE ACCOUNTS SET BALANCE=BALANCE+? WHERE ACCOUNT_NUMBER=?");
-            updateCreditingAccountStatement.setInt(1, amount);
-            updateCreditingAccountStatement.setString(2, creditingAccount);
-            updateCreditingAccountStatement.executeUpdate();
-
-            PreparedStatement updateDebitingAccountStatement = conn.prepareStatement("UPDATE ACCOUNTS SET BALANCE=BALANCE-? WHERE ACCOUNT_NUMBER=?");
-            updateDebitingAccountStatement.setInt(1, amount);
-            updateDebitingAccountStatement.setString(2, debitingAccount);
-            updateDebitingAccountStatement.executeUpdate();
-
-            conn.commit(); //transaction block end
-        } catch (SQLException e) {
-            LOG.info("Records failed to be inserted, transaction rolled back");
+        ResultSet resultSet = insertTransactionStatement.getGeneratedKeys();
+        if (resultSet.next()) {
+            transactionId = resultSet.getLong(1);
+        } else {
+            throw new SQLException("No transaction ID generate for transaction");
         }
-        LOG.info("Records successfully inserted");
+
+        PreparedStatement updateCreditingAccountStatement = conn.prepareStatement("UPDATE ACCOUNTS SET BALANCE=BALANCE+? WHERE ACCOUNT_NUMBER=?");
+        updateCreditingAccountStatement.setInt(1, amount);
+        updateCreditingAccountStatement.setString(2, creditingAccount);
+        updateCreditingAccountStatement.executeUpdate();
+
+        PreparedStatement updateDebitingAccountStatement = conn.prepareStatement("UPDATE ACCOUNTS SET BALANCE=BALANCE-? WHERE ACCOUNT_NUMBER=?");
+        updateDebitingAccountStatement.setInt(1, amount);
+        updateDebitingAccountStatement.setString(2, debitingAccount);
+        updateDebitingAccountStatement.executeUpdate();
+
+        conn.commit(); //transaction block end
         return transactionId;
     }
 }
