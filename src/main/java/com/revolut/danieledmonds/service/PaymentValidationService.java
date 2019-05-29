@@ -28,7 +28,7 @@ public class PaymentValidationService {
             throw new IllegalArgumentException("Request must contain payment payload in body");
         }
 
-        if(!Integer.toString(payment.getAmount()).matches("[0-9]{1,10}")) {
+        if(!Long.toString(payment.getAmount()).matches("[0-9]{1,10}")) {
             throw new IllegalArgumentException("Field 'amount' should be a positive integer of maximum 10 digits");
         }
 

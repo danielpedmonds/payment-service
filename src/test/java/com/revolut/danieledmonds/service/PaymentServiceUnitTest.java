@@ -40,7 +40,7 @@ public class PaymentServiceUnitTest {
 
         paymentService = new PaymentService(paymentValidationService, database);
 
-        when(database.insertTransactionsAndAccount(anyString(), anyString(), anyInt())).thenReturn(1L);
+        when(database.insertTransaction(anyString(), anyString(), anyLong())).thenReturn(1L);
 
         Response response = paymentService.processPayment(payment());
 
@@ -52,8 +52,8 @@ public class PaymentServiceUnitTest {
     public void processPaymentFailureResponse() throws SQLException {
 
         paymentService = new PaymentService(paymentValidationService, database);
-        
-        when(database.insertTransactionsAndAccount(anyString(), anyString(), anyInt())).thenThrow(new SQLException("Some problem"));
+
+        when(database.insertTransaction(anyString(), anyString(), anyLong())).thenThrow(new SQLException("Some problem"));
 
         Response response = paymentService.processPayment(payment());
 

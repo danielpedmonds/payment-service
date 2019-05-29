@@ -113,24 +113,24 @@ public class Database {
         }
     }
 
+
     /**
-     * This method takes the debitingAccount, creditingAccount and amount as parameters; inserting first the transaction
-     * followed by updating the creditingAccount and then the debitingAccount in one atomic action, such that if any of
-     * the updates fail the queries get rolled back.
+     * This method creates a new transaction with the status NOT_PROCESSED, returning the Id of the transaction inserted
      * @param debitingAccount
      * @param creditingAccount
      * @param amount
      * @return long transactionId
+     * @throws SQLException
      */
-    public long insertTransactionsAndAccount(String debitingAccount, String creditingAccount, int amount) throws SQLException {
+    public long insertTransaction(String debitingAccount, String creditingAccount, long amount) throws SQLException {
         long transactionId;
-        conn.setAutoCommit(false); //transaction block start
+        conn.setAutoCommit(false);
 
         PreparedStatement insertTransactionStatement = conn.prepareStatement("INSERT INTO TRANSACTIONS (STATUS, DEBITING_ACCOUNT_ID, CREDITING_ACCOUNT_ID, AMOUNT) VALUES ( ?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
-        insertTransactionStatement.setString(1, TransactionStatus.COMPLETE.name());
+        insertTransactionStatement.setString(1, TransactionStatus.NOT_PROCESSED.name());
         insertTransactionStatement.setString(2, debitingAccount);
         insertTransactionStatement.setString(3, creditingAccount);
-        insertTransactionStatement.setInt(4, amount);
+        insertTransactionStatement.setLong(4, amount);
         insertTransactionStatement.executeUpdate();
 
         ResultSet resultSet = insertTransactionStatement.getGeneratedKeys();
@@ -139,18 +139,37 @@ public class Database {
         } else {
             throw new SQLException("No transaction ID generate for transaction");
         }
+        conn.commit(); //transaction block end
+        return transactionId;
+    }
+
+    /**
+     * This method attempts to update the status of a transaction to PROCESSED for a given transaction ID,
+     * followed by updating the creditingAccount and then the debitingAccount in one atomic action,
+     * such that if any of the updates fail the queries get rolled back and the transaction remains NOT_PROCESSED
+     * @param debitingAccount
+     * @param creditingAccount
+     * @param amount
+     * @return long transactionId
+     */
+    public void updateTransactionStatusAndAccountBalance(String debitingAccount, String creditingAccount, long amount, long transactionId) throws SQLException {
+        conn.setAutoCommit(false); //transaction block start
+
+        PreparedStatement insertTransactionStatement = conn.prepareStatement("UPDATE TRANSACTIONS SET STATUS = ? WHERE TRANSACTION_ID = ?");
+        insertTransactionStatement.setString(1, TransactionStatus.PROCESSED.name());
+        insertTransactionStatement.setLong(2, transactionId);
+        insertTransactionStatement.executeUpdate();
 
         PreparedStatement updateCreditingAccountStatement = conn.prepareStatement("UPDATE ACCOUNTS SET BALANCE=BALANCE+? WHERE ACCOUNT_NUMBER=?");
-        updateCreditingAccountStatement.setInt(1, amount);
+        updateCreditingAccountStatement.setLong(1, amount);
         updateCreditingAccountStatement.setString(2, creditingAccount);
         updateCreditingAccountStatement.executeUpdate();
 
         PreparedStatement updateDebitingAccountStatement = conn.prepareStatement("UPDATE ACCOUNTS SET BALANCE=BALANCE-? WHERE ACCOUNT_NUMBER=?");
-        updateDebitingAccountStatement.setInt(1, amount);
+        updateDebitingAccountStatement.setLong(1, amount);
         updateDebitingAccountStatement.setString(2, debitingAccount);
         updateDebitingAccountStatement.executeUpdate();
 
         conn.commit(); //transaction block end
-        return transactionId;
     }
 }

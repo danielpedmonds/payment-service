@@ -6,7 +6,7 @@ public class Payment {
 
     private String creditingAccountNumber;
 
-    private int amount;
+    private long amount;
 
 
     public String getDebitingAccountNumber() {
@@ -25,11 +25,11 @@ public class Payment {
         this.creditingAccountNumber = creditingAccountNumber;
     }
 
-    public int getAmount() {
+    public long getAmount() {
         return amount;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(long amount) {
         this.amount = amount;
     }
 }

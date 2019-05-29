@@ -4,7 +4,7 @@ public class Account {
 
     private String accountNumber;
 
-    private int accountBalance;
+    private long accountBalance;
 
     public String getAccountNumber() {
         return accountNumber;
@@ -14,11 +14,11 @@ public class Account {
         this.accountNumber = accountNumber;
     }
 
-    public int getAccountBalance() {
+    public long getAccountBalance() {
         return accountBalance;
     }
 
-    public void setAccountBalance(int accountBalance) {
+    public void setAccountBalance(long accountBalance) {
         this.accountBalance = accountBalance;
     }
 }

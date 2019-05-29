@@ -29,10 +29,16 @@ public class PaymentService {
 
             paymentValidator.validatePayment(payment);
 
-            long transactionId =  database.insertTransactionsAndAccount(
+            long transactionId = database.insertTransaction(
                     payment.getDebitingAccountNumber(),
                     payment.getCreditingAccountNumber(),
                     payment.getAmount());
+
+            database.updateTransactionStatusAndAccountBalance(
+                    payment.getDebitingAccountNumber(),
+                    payment.getCreditingAccountNumber(),
+                    payment.getAmount(),
+                    transactionId);
 
             return new Response(200, String.format("Transaction number '%s' has been inserted", transactionId));
         } catch (Exception e) {
