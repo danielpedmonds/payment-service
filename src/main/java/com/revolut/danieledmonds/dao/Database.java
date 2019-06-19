@@ -24,6 +24,7 @@ public class Database {
                 LOG.info("About to create database connection");
                 Class.forName("org.h2.Driver");
                 conn = DriverManager.getConnection("jdbc:h2:~/Transfer", "username", "password");
+                conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
                 LOG.info("Database connection established");
             } catch (ClassNotFoundException e) {
                 LOG.info("Database connection failed");
@@ -160,15 +161,18 @@ public class Database {
         insertTransactionStatement.setLong(2, transactionId);
         insertTransactionStatement.executeUpdate();
 
+        PreparedStatement updateDebitingAccountStatement = conn.prepareStatement("UPDATE ACCOUNTS SET BALANCE=BALANCE-? WHERE ACCOUNT_NUMBER=? AND BALANCE - ? >= 0");
+        updateDebitingAccountStatement.setLong(1, amount);
+        updateDebitingAccountStatement.setString(2, debitingAccount);
+        updateDebitingAccountStatement.setLong(3, amount);
+        int rowsEffected = updateDebitingAccountStatement.executeUpdate();
+
+        if (rowsEffected != 1) throw new SQLException("Insufficient funds in debiting account");
+
         PreparedStatement updateCreditingAccountStatement = conn.prepareStatement("UPDATE ACCOUNTS SET BALANCE=BALANCE+? WHERE ACCOUNT_NUMBER=?");
         updateCreditingAccountStatement.setLong(1, amount);
         updateCreditingAccountStatement.setString(2, creditingAccount);
         updateCreditingAccountStatement.executeUpdate();
-
-        PreparedStatement updateDebitingAccountStatement = conn.prepareStatement("UPDATE ACCOUNTS SET BALANCE=BALANCE-? WHERE ACCOUNT_NUMBER=?");
-        updateDebitingAccountStatement.setLong(1, amount);
-        updateDebitingAccountStatement.setString(2, debitingAccount);
-        updateDebitingAccountStatement.executeUpdate();
 
         conn.commit(); //transaction block end
     }
