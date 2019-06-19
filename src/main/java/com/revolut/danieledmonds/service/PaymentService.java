@@ -7,8 +7,8 @@ import com.revolut.danieledmonds.domain.Response;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.inject.Inject;
+import java.sql.SQLException;
 
 public class PaymentService {
 
@@ -39,11 +39,17 @@ public class PaymentService {
                     payment.getCreditingAccountNumber(),
                     payment.getAmount());
 
-            database.updateTransactionStatusAndAccountBalance(
-                    payment.getDebitingAccountNumber(),
-                    payment.getCreditingAccountNumber(),
-                    payment.getAmount(),
-                    transactionId);
+            try {
+                database.updateTransactionStatusAndAccountBalance(
+                        payment.getDebitingAccountNumber(),
+                        payment.getCreditingAccountNumber(),
+                        payment.getAmount(),
+                        transactionId);
+            } catch (SQLException e) {
+                LOG.info("Error occurred processing transaction with ID '{}': {}", transactionId, e);
+                return new Response(HttpStatus.INTERNAL_SERVER_ERROR_500,
+                        String.format("Transaction with ID: '%s' was logged but failed to be processed", transactionId));
+            }
 
             return new Response(HttpStatus.OK_200, String.format("Transaction number '%s' has been inserted", transactionId));
         } catch (Exception e) {
